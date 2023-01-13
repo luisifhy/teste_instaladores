@@ -1,0 +1,33 @@
+version: '3.7'
+
+services:
+  postgres:
+    container_name: postgres_local_container
+    image: postgres:latest
+    environment:
+      POSTGRES_PASSWORD: Docspider@5
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 5s
+      timeout: 5s
+      retries: 120
+
+    networks:
+      - docspider_network
+
+  docspider.migrator.fs:
+    image: docspiderdev.azurecr.io/docspider.migrator
+    container_name: docspider.migrator.fs.local_container
+    command: ["dotnet", "Docspider.Migrator.dll", "-fs"]
+    environment:
+      - ASPNETCORE_Docker_Enabled=True
+      - ConnectionStrings__ProviderName=Postgres
+      - ConnectionStrings__Default=Server=postgres_local_container;Port=5432;Database=DocspiderDb;User Id=postgres;Password=Docspider@5;
+      - FullSearch__Server__Url=http://elastic:T34R3VsscLDiI1GyWqRv@191.235.71.17:9200
+    networks:
+      - docspider_network
+
+networks:
+  docspider_network:
+    name: docspider_local_network
+
